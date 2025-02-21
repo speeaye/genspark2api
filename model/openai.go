@@ -36,7 +36,18 @@ func (r *OpenAIChatCompletionRequest) PrependMessagesFromJSON(jsonString string)
 	if err != nil {
 		return err
 	}
-	r.Messages = append(newMessages, r.Messages...)
+
+	// 查找最后一个 system role 的索引
+	var insertIndex int
+	for i := len(r.Messages) - 1; i >= 0; i-- {
+		if r.Messages[i].Role == "system" {
+			insertIndex = i + 1
+			break
+		}
+	}
+
+	// 将 newMessages 插入到找到的索引后面
+	r.Messages = append(r.Messages[:insertIndex], append(newMessages, r.Messages[insertIndex:]...)...)
 	return nil
 }
 
