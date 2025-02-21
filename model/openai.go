@@ -1,5 +1,7 @@
 package model
 
+import "encoding/json"
+
 type OpenAIChatCompletionRequest struct {
 	Model    string              `json:"model"`
 	Stream   bool                `json:"stream"`
@@ -22,6 +24,20 @@ type OpenAIChatMessage struct {
 	Content      interface{}   `json:"content"`
 	IsPrompt     bool          `json:"is_prompt"`
 	SessionState *SessionState `json:"session_state"`
+}
+
+func (r *OpenAIChatCompletionRequest) AddMessage(message OpenAIChatMessage) {
+	r.Messages = append([]OpenAIChatMessage{message}, r.Messages...)
+}
+
+func (r *OpenAIChatCompletionRequest) PrependMessagesFromJSON(jsonString string) error {
+	var newMessages []OpenAIChatMessage
+	err := json.Unmarshal([]byte(jsonString), &newMessages)
+	if err != nil {
+		return err
+	}
+	r.Messages = append(newMessages, r.Messages...)
+	return nil
 }
 
 func (r *OpenAIChatCompletionRequest) SystemMessagesProcess(model string) {

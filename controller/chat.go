@@ -336,6 +336,12 @@ func fetchImageBytes(url string) ([]byte, error) {
 
 func createRequestBody(c *gin.Context, client cycletls.CycleTLS, cookie string, openAIReq *model.OpenAIChatCompletionRequest) (map[string]interface{}, error) {
 	openAIReq.SystemMessagesProcess(openAIReq.Model)
+	if config.PRE_MESSAGES_JSON != "" {
+		err := openAIReq.PrependMessagesFromJSON(config.PRE_MESSAGES_JSON)
+		if err != nil {
+			return nil, fmt.Errorf("PrependMessagesFromJSON err: %v PrependMessagesFromJSON:", err, config.PRE_MESSAGES_JSON)
+		}
+	}
 
 	// 处理消息中的图像 URL
 	err := processMessages(c, client, cookie, openAIReq.Messages)

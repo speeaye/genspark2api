@@ -30,6 +30,9 @@ var CheatUrl = env.String("CHEAT_URL", "https://gs-cheat.aytsao.cn/genspark/crea
 // 隐藏思考过程
 var ReasoningHide = env.Int("REASONING_HIDE", 0)
 
+// 前置message
+var PRE_MESSAGES_JSON = env.String("PRE_MESSAGES_JSON", "")
+
 var RateLimitCookieLockDuration = env.Int("RATE_LIMIT_COOKIE_LOCK_DURATION", 10*60)
 
 // 路由前缀
