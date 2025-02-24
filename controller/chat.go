@@ -492,7 +492,7 @@ func createImageRequestBody(c *gin.Context, cookie string, openAIReq *model.Open
 	}
 	var currentQueryString string
 	if len(chatId) != 0 {
-		currentQueryString = fmt.Sprintf("id=%s&type=%s", chatId, imageType)
+		currentQueryString = fmt.Sprintf("id=%s&type=%s", "90280b44-9ddf-4f4f-ba62-d72d38a82f99", imageType)
 	} else {
 		currentQueryString = fmt.Sprintf("type=%s", imageType)
 	}
@@ -1377,31 +1377,31 @@ func ImageProcess(c *gin.Context, client cycletls.CycleTLS, openAIReq model.Open
 	)
 
 	var (
-		//sessionImageChatManager *config.SessionMapManager
-		maxRetries int
-		cookie     string
-		chatId     string
+		sessionImageChatManager *config.SessionMapManager
+		maxRetries              int
+		cookie                  string
+		chatId                  string
 	)
 
 	cookieManager := config.NewCookieManager()
-	//sessionImageChatManager = config.NewSessionMapManager()
+	sessionImageChatManager = config.NewSessionMapManager()
 	ctx := c.Request.Context()
 
 	// Initialize session manager and get initial cookie
-	//if len(config.SessionImageChatMap) == 0 {
-	//logger.Warnf(ctx, "未配置环境变量 SESSION_IMAGE_CHAT_MAP, 可能会生图失败!")
-	maxRetries = len(cookieManager.Cookies)
+	if len(config.SessionImageChatMap) == 0 {
+		logger.Warnf(ctx, "未配置环境变量 SESSION_IMAGE_CHAT_MAP, 可能会生图失败!")
+		maxRetries = len(cookieManager.Cookies)
 
-	var err error
-	cookie, err = cookieManager.GetRandomCookie()
-	if err != nil {
-		logger.Errorf(ctx, "Failed to get initial cookie: %v", err)
-		return nil, fmt.Errorf(errNoValidCookies)
+		var err error
+		cookie, err = cookieManager.GetRandomCookie()
+		if err != nil {
+			logger.Errorf(ctx, "Failed to get initial cookie: %v", err)
+			return nil, fmt.Errorf(errNoValidCookies)
+		}
+	} else {
+		maxRetries = sessionImageChatManager.GetSize()
+		cookie, chatId, _ = sessionImageChatManager.GetRandomKeyValue()
 	}
-	//} else {
-	//	maxRetries = sessionImageChatManager.GetSize()
-	//	cookie, chatId, _ = sessionImageChatManager.GetRandomKeyValue()
-	//}
 
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		// Create request body
