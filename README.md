@@ -23,7 +23,7 @@ _觉得有点意思的话 别忘了点个 ⭐_
     - **gpt-4o**
     - **o1**
     - **o3-mini-high**
-    - **claude-3-5-sonnet**
+    - **claude-3-7-sonnet**
     - **claude-3-5-haiku**
     - **gemini-2.0-flash**
     - **deep-seek-v3**
@@ -167,7 +167,7 @@ Render 可以直接部署 docker 镜像,不需要 fork 仓库：[Render](https:/
 6. `REQUEST_RATE_LIMIT=60`  [可选]每分钟下的单ip请求速率限制,默认:60次/min
 7. `PROXY_URL=http://127.0.0.1:10801`  [可选]代理
 8. `AUTO_MODEL_CHAT_MAP_TYPE=1`  [可选]自动配置Model绑定Chat(默认:1)[0:关闭,1:开启]
-9. `MODEL_CHAT_MAP=claude-3-5-sonnet=a649******00fa,gpt-4o=su74******47hd`  [可选]Model绑定Chat(多个请以,分隔),详细请看[进阶配置](#解决模型自动切换导致降智问题)
+9. `MODEL_CHAT_MAP=claude-3-7-sonnet=a649******00fa,gpt-4o=su74******47hd`  [可选]Model绑定Chat(多个请以,分隔),详细请看[进阶配置](#解决模型自动切换导致降智问题)
 10. `ROUTE_PREFIX=hf`  [可选]路由前缀,默认为空,添加该变量后的接口示例:`/hf/v1/chat/completions`
 11. `RATE_LIMIT_COOKIE_LOCK_DURATION=600`  [可选]到达速率限制的cookie禁用时间,默认为600s
 12. `REASONING_HIDE=0`  [可选]**隐藏**推理过程(默认:0)[0:关闭,1:开启]
@@ -205,10 +205,10 @@ Render 可以直接部署 docker 镜像,不需要 fork 仓库：[Render](https:/
 > 【作用】指定对话,解决模型自动切换导致降智问题。
 
 1. 打开**F12**开发者工具。
-2. 选择需要绑定的对话的模型(示例:`claude-3-5-sonnet`),发起对话。
+2. 选择需要绑定的对话的模型(示例:`claude-3-7-sonnet`),发起对话。
 3. 点击ask请求,此时最上方url中的`id`(或响应中的`id`)即为此对话唯一id。
    ![img.png](docs/img4.png)
-4. 配置环境变量 `MODEL_CHAT_MAP=claude-3-5-sonnet=3cdcc******474c5` (多个请以,分隔)
+4. 配置环境变量 `MODEL_CHAT_MAP=claude-3-7-sonnet=3cdcc******474c5` (多个请以,分隔)
 
 ### 生图模型配置[**暂不需要**]
 
