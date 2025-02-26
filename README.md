@@ -23,6 +23,7 @@ _觉得有点意思的话 别忘了点个 ⭐_
     - **gpt-4o**
     - **o1**
     - **o3-mini-high**
+    - **claude-3-5-sonnet**
     - **claude-3-7-sonnet**
     - **claude-3-5-haiku**
     - **gemini-2.0-flash**
