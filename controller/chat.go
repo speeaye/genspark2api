@@ -1389,7 +1389,7 @@ func ImageProcess(c *gin.Context, client cycletls.CycleTLS, openAIReq model.Open
 
 	// Initialize session manager and get initial cookie
 	if len(config.SessionImageChatMap) == 0 {
-		logger.Warnf(ctx, "未配置环境变量 SESSION_IMAGE_CHAT_MAP, 可能会生图失败!")
+		//logger.Warnf(ctx, "未配置环境变量 SESSION_IMAGE_CHAT_MAP, 可能会生图失败!")
 		maxRetries = len(cookieManager.Cookies)
 
 		var err error
@@ -1500,7 +1500,8 @@ func ImageProcess(c *gin.Context, client cycletls.CycleTLS, openAIReq model.Open
 			logger.Errorf(ctx, errServerErrMsg)
 			return nil, fmt.Errorf(errServerErrMsg)
 		case common.IsServerOverloaded(body):
-			logger.Errorf(ctx, fmt.Sprintf("Server overloaded, please try again later.%s", "官方服务超载或环境变量 SESSION_IMAGE_CHAT_MAP 未配置"))
+			//logger.Errorf(ctx, fmt.Sprintf("Server overloaded, please try again later.%s", "官方服务超载或环境变量 SESSION_IMAGE_CHAT_MAP 未配置"))
+			logger.Errorf(ctx, fmt.Sprintf("Server overloaded, please try again later.%s", "官方服务超载"))
 			return nil, fmt.Errorf("Server overloaded, please try again later.")
 		}
 

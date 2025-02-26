@@ -17,8 +17,6 @@ _觉得有点意思的话 别忘了点个 ⭐_
 
 </div>
 
-> 注意: 因为被官方针对，目前版本下存在降智现象，可暂时配置环境变量`MODEL_CHAT_MAP`解决降智,详细请看[进阶配置](#解决模型自动切换导致降智问题)中的**方案二**。
-
 ## 功能
 
 - [x] 支持对话接口(流式/非流式)(`/chat/completions`)(请求非以下列表的模型会触发`Mixture-of-Agents`模式)
@@ -32,7 +30,7 @@ _觉得有点意思的话 别忘了点个 ⭐_
     - **deep-seek-r1**
 - [x] 支持**联网搜索**,在模型名后添加`-search`即可(如:`gpt-4o-search`)
 - [x] 支持识别**图片**/**文件**多轮对话
-- [x] 支持文生图接口(`/images/generations`),详细请看[生图模型配置](#生图模型配置)
+- [x] 支持文生图接口(`/images/generations`)
     - **flux**
     - **flux-speed**
     - **flux-pro/ultra**
@@ -173,7 +171,8 @@ Render 可以直接部署 docker 镜像,不需要 fork 仓库：[Render](https:/
 10. `ROUTE_PREFIX=hf`  [可选]路由前缀,默认为空,添加该变量后的接口示例:`/hf/v1/chat/completions`
 11. `RATE_LIMIT_COOKIE_LOCK_DURATION=600`  [可选]到达速率限制的cookie禁用时间,默认为600s
 12. `REASONING_HIDE=0`  [可选]**隐藏**推理过程(默认:0)[0:关闭,1:开启]
-13. `SESSION_IMAGE_CHAT_MAP=aed9196b-********-4ed6e32f7e4d=0c6785e6-********-7ff6e5a2a29c,aefwer6b-********-casds22=fda234-********-sfaw123`  [可选]Session绑定Image-Chat(多个请以,分隔),详细请看[进阶配置](#生图模型配置)
+
+~~13. `SESSION_IMAGE_CHAT_MAP=aed9196b-********-4ed6e32f7e4d=0c6785e6-********-7ff6e5a2a29c,aefwer6b-********-casds22=fda234-********-sfaw123`  [可选]Session绑定Image-Chat(多个请以,分隔),详细请看[进阶配置](#生图模型配置)~~
 
 ~~14. `YES_CAPTCHA_CLIENT_KEY=******`  [可选]YesCaptcha Client Key 过谷歌验证,详细请看[使用YesCaptcha过谷歌验证](#使用YesCaptcha过谷歌验证)~~
 
@@ -211,15 +210,18 @@ Render 可以直接部署 docker 镜像,不需要 fork 仓库：[Render](https:/
    ![img.png](docs/img4.png)
 4. 配置环境变量 `MODEL_CHAT_MAP=claude-3-5-sonnet=3cdcc******474c5` (多个请以,分隔)
 
-### 生图模型配置
+### 生图模型配置[**暂不需要**]
 
 > 配置环境变量 SESSION_IMAGE_CHAT_MAP
 
-1. 打开**F12**开发者工具。
-2. 选择生成图像,选择任一生图模型,发起对话。
-3. 点击ask请求,此时最上方url中的`id`(或响应中的`id`)即为此对话唯一id,然后在请求头中获取`session_id`的值。
+~~1. 打开**F12**开发者工具。~~
+
+~~2. 选择生成图像,选择任一生图模型,发起对话。~~
+
+~~3. 点击ask请求,此时最上方url中的`id`(或响应中的`id`)即为此对话唯一id,然后在请求头中获取`session_id`的值。~~
+
    ![img.png](docs/img7.png)
-4. 配置环境变量 `SESSION_IMAGE_CHAT_MAP=aed9196b-********-4ed6e32f7e4d=0c6785e6-********-7ff6e5a2a29c` (即session=chatId的格式,多个请以,分隔)
+~~4. 配置环境变量 `SESSION_IMAGE_CHAT_MAP=aed9196b-********-4ed6e32f7e4d=0c6785e6-********-7ff6e5a2a29c` (即session=chatId的格式,多个请以,分隔)~~
 
 ### 使用YesCaptcha过谷歌验证[**暂不需要**]
 

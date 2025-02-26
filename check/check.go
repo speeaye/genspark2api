@@ -61,7 +61,7 @@ func CheckEnvVariable() {
 			config.SessionImageChatMap = sessionImageChatMap
 		}
 	} else {
-		logger.SysLog("环境变量 SESSION_IMAGE_CHAT_MAP 未设置，生图可能会异常")
+		//logger.SysLog("环境变量 SESSION_IMAGE_CHAT_MAP 未设置，生图可能会异常")
 	}
 
 	logger.SysLog("environment variable check passed.")
