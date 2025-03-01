@@ -492,7 +492,7 @@ func createImageRequestBody(c *gin.Context, cookie string, openAIReq *model.Open
 	}
 	var currentQueryString string
 	if len(chatId) != 0 {
-		currentQueryString = fmt.Sprintf("id=%s&type=%s", "90280b44-9ddf-4f4f-ba62-d72d38a82f99", imageType)
+		currentQueryString = fmt.Sprintf("id=%s&type=%s", chatId, imageType)
 	} else {
 		currentQueryString = fmt.Sprintf("type=%s", imageType)
 	}
@@ -702,6 +702,7 @@ func makeRequest(client cycletls.CycleTLS, jsonData []byte, cookie string, isStr
 			"Origin":       baseURL,
 			"Referer":      baseURL + "/",
 			"Cookie":       cookie,
+			"User-Agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome",
 		},
 	}, "POST")
 }
@@ -760,6 +761,7 @@ func makeDeleteRequest(client cycletls.CycleTLS, cookie, projectId string) (cycl
 			"Origin":       baseURL,
 			"Referer":      baseURL + "/",
 			"Cookie":       cookie,
+			"User-Agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome",
 		},
 	}, "GET")
 }
@@ -778,6 +780,7 @@ func makeGetUploadUrlRequest(client cycletls.CycleTLS, cookie string) (cycletls.
 			"Origin":       baseURL,
 			"Referer":      baseURL + "/",
 			"Cookie":       cookie,
+			"User-Agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome",
 		},
 	}, "GET")
 }
@@ -915,10 +918,8 @@ func handleStreamRequest(c *gin.Context, client cycletls.CycleTLS, cookie string
 				case common.IsNotLogin(data):
 					isRateLimit = true
 					logger.Warnf(ctx, "Cookie Not Login, switching to next cookie, attempt %d/%d, COOKIE:%s", attempt+1, maxRetries, cookie)
-					//err := cookieManager.RemoveCookie(cookie)
-					//if err != nil {
-					//	logger.Errorf(ctx, "Failed to remove cookie: %v", err)
-					//}
+					// 删除cookie
+					config.RemoveCookie(cookie)
 					break SSELoop // 使用 label 跳出 SSE 循环
 				}
 
@@ -1021,6 +1022,7 @@ func makeStreamRequest(c *gin.Context, client cycletls.CycleTLS, jsonData []byte
 			"Origin":       baseURL,
 			"Referer":      baseURL + "/",
 			"Cookie":       cookie,
+			"User-Agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome",
 		},
 	}
 
@@ -1184,10 +1186,8 @@ func handleNonStreamRequest(c *gin.Context, client cycletls.CycleTLS, cookie str
 			case common.IsNotLogin(line):
 				isRateLimit = true
 				logger.Warnf(ctx, "Cookie Not Login, switching to next cookie, attempt %d/%d, COOKIE:%s", attempt+1, maxRetries, cookie)
-				//err := cookieManager.RemoveCookie(cookie)
-				//if err != nil {
-				//	logger.Errorf(ctx, "Failed to remove cookie: %v", err)
-				//}
+				// 删除cookie
+				config.RemoveCookie(cookie)
 				break
 			case common.IsServiceUnavailablePage(line):
 				logger.Errorf(ctx, errServiceUnavailable)
