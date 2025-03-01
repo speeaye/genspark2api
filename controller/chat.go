@@ -958,11 +958,13 @@ func handleStreamRequest(c *gin.Context, client cycletls.CycleTLS, cookie string
 // 处理流式数据的辅助函数，返回bool表示是否继续处理
 func processStreamData(c *gin.Context, data string, projectId *string, cookie, responseId, model string, jsonData []byte, searchModel bool) bool {
 	data = strings.TrimSpace(data)
-	if !strings.HasPrefix(data, "data: ") {
+	//if !strings.HasPrefix(data, "data: ") {
+	//	return true
+	//}
+	data = strings.TrimPrefix(data, "data: ")
+	if !strings.HasPrefix(data, "{\"message_id\": ") && !strings.HasPrefix(data, " {\"id\": ") {
 		return true
 	}
-	data = strings.TrimPrefix(data, "data: ")
-
 	var event map[string]interface{}
 	if err := json.Unmarshal([]byte(data), &event); err != nil {
 		logger.Errorf(c.Request.Context(), "Failed to unmarshal event: %v", err)
