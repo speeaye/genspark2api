@@ -962,7 +962,7 @@ func processStreamData(c *gin.Context, data string, projectId *string, cookie, r
 	//	return true
 	//}
 	data = strings.TrimPrefix(data, "data: ")
-	if !strings.HasPrefix(data, "{\"message_id\": ") && !strings.HasPrefix(data, " {\"id\": ") {
+	if !strings.HasPrefix(data, "{\"id\":") && !strings.HasPrefix(data, "{\"message_id\":") {
 		return true
 	}
 	var event map[string]interface{}
