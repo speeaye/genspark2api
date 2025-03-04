@@ -3,13 +3,12 @@ package common
 import "time"
 
 var StartTime = time.Now().Unix() // unit: second
-var Version = "v1.10.19"          // this hard coding will be replaced automatically when building, no need to manually change
+var Version = "v1.10.20"          // this hard coding will be replaced automatically when building, no need to manually change
 
 var DefaultOpenaiModelList = []string{
 	"gpt-4o",
 	"o1",
 	"o3-mini-high",
-	"claude-3-5-sonnet",
 	"claude-3-7-sonnet",
 	"claude-3-5-haiku",
 	"gemini-2.0-flash",
@@ -30,7 +29,6 @@ var TextModelList = []string{
 	"gpt-4o",
 	"o1",
 	"o3-mini-high",
-	"claude-3-5-sonnet",
 	"claude-3-7-sonnet",
 	"claude-3-5-haiku",
 	"gemini-2.0-flash",

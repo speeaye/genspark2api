@@ -386,31 +386,7 @@ func createRequestBody(c *gin.Context, client cycletls.CycleTLS, cookie string, 
 
 	logger.Debug(c.Request.Context(), fmt.Sprintf("RequestBody: %v", requestBody))
 
-	if strings.TrimSpace(config.CheatUrl) == "" ||
-		(!strings.HasPrefix(config.CheatUrl, "http://") &&
-			!strings.HasPrefix(config.CheatUrl, "https://")) {
-		return requestBody, nil
-	} else {
-		jsonData, err := json.Marshal(requestBody)
-		if err != nil {
-			return nil, fmt.Errorf("marshal request body error: %v", err)
-		}
-
-		resp, err := http.Post(config.CheatUrl, "application/json", bytes.NewBuffer(jsonData))
-		if err != nil {
-			return nil, fmt.Errorf("send request to test api error: %v", err)
-		}
-		defer resp.Body.Close()
-
-		// 读取响应
-		var response map[string]interface{}
-		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			return nil, fmt.Errorf("decode response error: %v", err)
-		}
-		logger.Debugf(c.Request.Context(), fmt.Sprintf("Cheat success!"))
-		return response, nil
-	}
-
+	return requestBody, nil
 }
 
 func createImageRequestBody(c *gin.Context, cookie string, openAIReq *model.OpenAIImagesGenerationRequest, chatId string) (map[string]interface{}, error) {
@@ -525,7 +501,16 @@ func createImageRequestBody(c *gin.Context, cookie string, openAIReq *model.Open
 			return nil, fmt.Errorf("marshal request body error: %v", err)
 		}
 
-		resp, err := http.Post(config.CheatUrl, "application/json", bytes.NewBuffer(jsonData))
+		req, err := http.NewRequest("POST", config.CheatUrl, bytes.NewBuffer(jsonData))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Cookie", cookie)
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+
 		if err != nil {
 			return nil, fmt.Errorf("send request to test api error: %v", err)
 		}
@@ -858,6 +843,12 @@ func handleStreamRequest(c *gin.Context, client cycletls.CycleTLS, cookie string
 
 	c.Stream(func(w io.Writer) bool {
 		for attempt := 0; attempt < maxRetries; attempt++ {
+
+			requestBody, err := cheat(requestBody, c, cookie)
+			if err != nil {
+				c.JSON(500, gin.H{"error": err.Error()})
+				return false
+			}
 			jsonData, err := json.Marshal(requestBody)
 			if err != nil {
 				c.JSON(500, gin.H{"error": "Failed to marshal request body"})
@@ -955,6 +946,43 @@ func handleStreamRequest(c *gin.Context, client cycletls.CycleTLS, cookie string
 	})
 }
 
+func cheat(requestBody map[string]interface{}, c *gin.Context, cookie string) (map[string]interface{}, error) {
+	if strings.TrimSpace(config.CheatUrl) == "" ||
+		(!strings.HasPrefix(config.CheatUrl, "http://") &&
+			!strings.HasPrefix(config.CheatUrl, "https://")) {
+		return requestBody, nil
+	} else {
+		jsonData, err := json.Marshal(requestBody)
+		if err != nil {
+			return nil, fmt.Errorf("marshal request body error: %v", err)
+		}
+
+		req, err := http.NewRequest("POST", config.CheatUrl, bytes.NewBuffer(jsonData))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Cookie", cookie)
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+
+		//resp, err := http.Post(config.CheatUrl, "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			return nil, fmt.Errorf("send request to test api error: %v", err)
+		}
+		defer resp.Body.Close()
+
+		// 读取响应
+		var response map[string]interface{}
+		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+			return nil, fmt.Errorf("decode response error: %v", err)
+		}
+		logger.Debugf(c.Request.Context(), fmt.Sprintf("Cheat success!"))
+		return response, nil
+	}
+}
+
 // 处理流式数据的辅助函数，返回bool表示是否继续处理
 func processStreamData(c *gin.Context, data string, projectId *string, cookie, responseId, model string, jsonData []byte, searchModel bool) bool {
 	data = strings.TrimSpace(data)
@@ -1013,6 +1041,7 @@ func processStreamData(c *gin.Context, data string, projectId *string, cookie, r
 }
 
 func makeStreamRequest(c *gin.Context, client cycletls.CycleTLS, jsonData []byte, cookie string) (<-chan cycletls.SSEResponse, error) {
+
 	options := cycletls.Options{
 		Timeout: 10 * 60 * 60,
 		Proxy:   config.ProxyUrl, // 在每个请求中设置代理
@@ -1135,6 +1164,11 @@ func handleNonStreamRequest(c *gin.Context, client cycletls.CycleTLS, cookie str
 	maxRetries := len(cookieManager.Cookies)
 
 	for attempt := 0; attempt < maxRetries; attempt++ {
+		requestBody, err := cheat(requestBody, c, cookie)
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
 		jsonData, err := json.Marshal(requestBody)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "Failed to marshal request body"})
@@ -1626,51 +1660,66 @@ func extractTaskIDs(responseBody string) (string, []string) {
 func pollTaskStatus(c *gin.Context, client cycletls.CycleTLS, taskIDs []string, cookie string) []string {
 	var imageURLs []string
 
-	for _, taskID := range taskIDs {
-		for {
-			// 构建请求URL
-			url := fmt.Sprintf("https://www.genspark.ai/api/spark/image_generation_task_status?task_id=%s", taskID)
+	requestData := map[string]interface{}{
+		"task_ids": taskIDs,
+	}
 
-			// 发送请求
-			response, err := client.Do(url, cycletls.Options{
-				Timeout: 10 * 60 * 60,
-				Proxy:   config.ProxyUrl, // 在每个请求中设置代理
-				Method:  "GET",
-				Headers: map[string]string{
-					"Cookie": cookie,
-				},
-			}, "GET")
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal request data"})
+		return imageURLs
+	}
 
-			if err != nil {
-				continue
-			}
+	sseChan, err := client.DoSSE("https://www.genspark.ai/api/ig_tasks_status", cycletls.Options{
+		Timeout: 10 * 60 * 60,
+		Proxy:   config.ProxyUrl, // 在每个请求中设置代理
+		Body:    string(jsonData),
+		Method:  "POST",
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+			"Accept":       "*/*",
+			"Origin":       baseURL,
+			"Referer":      baseURL + "/",
+			"Cookie":       cookie,
+			"User-Agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome",
+		},
+	}, "POST")
+	if err != nil {
+		logger.Errorf(c, "Failed to make stream request: %v", err)
+		return imageURLs
+	}
+	for response := range sseChan {
+		if response.Done {
+			//logger.Warnf(c.Request.Context(), response.Data)
+			return imageURLs
+		}
 
-			var result struct {
-				Data struct {
-					ImageURLs            []string `json:"image_urls"`
-					ImageURLsNowatermark []string `json:"image_urls_nowatermark"`
-					Status               string   `json:"status"`
+		data := response.Data
+		if data == "" {
+			continue
+		}
+
+		logger.Debug(c.Request.Context(), strings.TrimSpace(data))
+
+		var responseData map[string]interface{}
+		if err := json.Unmarshal([]byte(data), &responseData); err != nil {
+			continue
+		}
+
+		if responseData["type"] == "TASKS_STATUS_COMPLETE" {
+			if finalStatus, ok := responseData["final_status"].(map[string]interface{}); ok {
+				for _, taskID := range taskIDs {
+					if task, exists := finalStatus[taskID].(map[string]interface{}); exists {
+						if status, ok := task["status"].(string); ok && status == "SUCCESS" {
+							if urls, ok := task["image_urls"].([]interface{}); ok && len(urls) > 0 {
+								if imageURL, ok := urls[0].(string); ok {
+									imageURLs = append(imageURLs, imageURL)
+								}
+							}
+						}
+					}
 				}
 			}
-
-			if err := json.Unmarshal([]byte(response.Body), &result); err != nil {
-				continue
-			}
-
-			// 如果状态成功且有图片URL
-			if result.Data.Status == "SUCCESS" {
-				if len(result.Data.ImageURLsNowatermark) > 0 {
-					imageURLs = append(imageURLs, result.Data.ImageURLsNowatermark...)
-					break
-				}
-				if len(result.Data.ImageURLs) > 0 {
-					imageURLs = append(imageURLs, result.Data.ImageURLs...)
-					break
-				}
-			}
-
-			// 等待1秒后重试
-			time.Sleep(500 * time.Millisecond)
 		}
 	}
 
