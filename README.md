@@ -36,6 +36,7 @@ _觉得有点意思的话 别忘了点个 ⭐_
     - **flux-speed**
     - **flux-pro/ultra**
     - **ideogram**
+    - **ideogram/V_2A**
     - **recraft-v3**
     - **dall-e-3**
     - **imagen3**
