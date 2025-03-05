@@ -221,9 +221,11 @@ Render 可以直接部署 docker 镜像,不需要 fork 仓库：[Render](https:/
 
 #### docker
 ```docker 
-docker run --name deanxv/genspark-playwright-prxoy -d --restart always \
+docker run --name genspark-playwright-prxoy -d --restart always \
 -p 7022:7022 \
 -e PROXY_URL=http://account:pwd@ip:port #  [可选] 推荐(住宅)动态代理,配置代理后过验证概率更高,但响应会变慢。
+-e TZ=Asia/Shanghai \
+deanxv/genspark-playwright-prxoy
 ```
 
 #### docker-compose
