@@ -2,7 +2,7 @@ package controller
 
 import (
 	"bufio"
-	"bytes"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -491,40 +491,75 @@ func createImageRequestBody(c *gin.Context, cookie string, openAIReq *model.Open
 
 	logger.Debug(c.Request.Context(), fmt.Sprintf("RequestBody: %v", requestBody))
 
-	if strings.TrimSpace(config.CheatUrl) == "" ||
-		(!strings.HasPrefix(config.CheatUrl, "http://") &&
-			!strings.HasPrefix(config.CheatUrl, "https://")) {
+	if strings.TrimSpace(config.RecaptchaProxyUrl) == "" ||
+		(!strings.HasPrefix(config.RecaptchaProxyUrl, "http://") &&
+			!strings.HasPrefix(config.RecaptchaProxyUrl, "https://")) {
 		return requestBody, nil
 	} else {
-		jsonData, err := json.Marshal(requestBody)
-		if err != nil {
-			return nil, fmt.Errorf("marshal request body error: %v", err)
+
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		client := &http.Client{Transport: tr}
+
+		// 检查并补充 RecaptchaProxyUrl 的末尾斜杠
+		if !strings.HasSuffix(config.RecaptchaProxyUrl, "/") {
+			config.RecaptchaProxyUrl += "/"
 		}
 
-		req, err := http.NewRequest("POST", config.CheatUrl, bytes.NewBuffer(jsonData))
+		// 创建请求
+		req, err := http.NewRequest("GET", fmt.Sprintf("%sgenspark", config.RecaptchaProxyUrl), nil)
 		if err != nil {
+			logger.Errorf(c.Request.Context(), fmt.Sprintf("创建/genspark请求失败   %v\n", err))
 			return nil, err
 		}
+
+		// 设置请求头
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Cookie", cookie)
 
-		client := &http.Client{}
+		// 发送请求
 		resp, err := client.Do(req)
-
 		if err != nil {
-			return nil, fmt.Errorf("send request to test api error: %v", err)
+			logger.Errorf(c.Request.Context(), fmt.Sprintf("发送/genspark请求失败   %v\n", err))
+			return nil, err
 		}
 		defer resp.Body.Close()
 
-		// 读取响应
-		var response map[string]interface{}
-		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			return nil, fmt.Errorf("decode response error: %v", err)
+		// 读取响应体
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			logger.Errorf(c.Request.Context(), fmt.Sprintf("读取/genspark响应失败   %v\n", err))
+			return nil, err
 		}
-		logger.Debugf(c.Request.Context(), fmt.Sprintf("Cheat success!"))
-		return response, nil
-	}
 
+		type Response struct {
+			Code    int    `json:"code"`
+			Token   string `json:"token"`
+			Message string `json:"message"`
+		}
+
+		if resp.StatusCode == 200 {
+			var response Response
+			if err := json.Unmarshal(body, &response); err != nil {
+				logger.Errorf(c.Request.Context(), fmt.Sprintf("读取/genspark JSON 失败   %v\n", err))
+				return nil, err
+			}
+
+			if response.Code == 200 {
+				logger.Debugf(c.Request.Context(), fmt.Sprintf("g_recaptcha_token: %v\n", response.Token))
+				requestBody["g_recaptcha_token"] = response.Token
+				logger.Infof(c.Request.Context(), fmt.Sprintf("cheat success!"))
+				return requestBody, nil
+			} else {
+				logger.Errorf(c.Request.Context(), fmt.Sprintf("读取/genspark token 失败   %v\n", err))
+				return nil, err
+			}
+		} else {
+			logger.Errorf(c.Request.Context(), fmt.Sprintf("请求/genspark失败   %v\n", err))
+			return nil, err
+		}
+	}
 }
 
 // createStreamResponse 创建流式响应
@@ -947,39 +982,74 @@ func handleStreamRequest(c *gin.Context, client cycletls.CycleTLS, cookie string
 }
 
 func cheat(requestBody map[string]interface{}, c *gin.Context, cookie string) (map[string]interface{}, error) {
-	if strings.TrimSpace(config.CheatUrl) == "" ||
-		(!strings.HasPrefix(config.CheatUrl, "http://") &&
-			!strings.HasPrefix(config.CheatUrl, "https://")) {
+	if strings.TrimSpace(config.RecaptchaProxyUrl) == "" ||
+		(!strings.HasPrefix(config.RecaptchaProxyUrl, "http://") &&
+			!strings.HasPrefix(config.RecaptchaProxyUrl, "https://")) {
 		return requestBody, nil
 	} else {
-		jsonData, err := json.Marshal(requestBody)
-		if err != nil {
-			return nil, fmt.Errorf("marshal request body error: %v", err)
+
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		client := &http.Client{Transport: tr}
+
+		// 检查并补充 RecaptchaProxyUrl 的末尾斜杠
+		if !strings.HasSuffix(config.RecaptchaProxyUrl, "/") {
+			config.RecaptchaProxyUrl += "/"
 		}
 
-		req, err := http.NewRequest("POST", config.CheatUrl, bytes.NewBuffer(jsonData))
+		// 创建请求
+		req, err := http.NewRequest("GET", fmt.Sprintf("%sgenspark", config.RecaptchaProxyUrl), nil)
 		if err != nil {
+			logger.Errorf(c.Request.Context(), fmt.Sprintf("创建/genspark请求失败   %v\n", err))
 			return nil, err
 		}
+
+		// 设置请求头
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Cookie", cookie)
 
-		client := &http.Client{}
+		// 发送请求
 		resp, err := client.Do(req)
-
-		//resp, err := http.Post(config.CheatUrl, "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
-			return nil, fmt.Errorf("send request to test api error: %v", err)
+			logger.Errorf(c.Request.Context(), fmt.Sprintf("发送/genspark请求失败   %v\n", err))
+			return nil, err
 		}
 		defer resp.Body.Close()
 
-		// 读取响应
-		var response map[string]interface{}
-		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			return nil, fmt.Errorf("decode response error: %v", err)
+		// 读取响应体
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			logger.Errorf(c.Request.Context(), fmt.Sprintf("读取/genspark响应失败   %v\n", err))
+			return nil, err
 		}
-		logger.Debugf(c.Request.Context(), fmt.Sprintf("Cheat success!"))
-		return response, nil
+
+		type Response struct {
+			Code    int    `json:"code"`
+			Token   string `json:"token"`
+			Message string `json:"message"`
+		}
+
+		if resp.StatusCode == 200 {
+			var response Response
+			if err := json.Unmarshal(body, &response); err != nil {
+				logger.Errorf(c.Request.Context(), fmt.Sprintf("读取/genspark JSON 失败   %v\n", err))
+				return nil, err
+			}
+
+			if response.Code == 200 {
+				logger.Debugf(c.Request.Context(), fmt.Sprintf("g_recaptcha_token: %v\n", response.Token))
+				requestBody["g_recaptcha_token"] = response.Token
+				logger.Infof(c.Request.Context(), fmt.Sprintf("cheat success!"))
+				return requestBody, nil
+			} else {
+				logger.Errorf(c.Request.Context(), fmt.Sprintf("读取/genspark token 失败   %v\n", err))
+				return nil, err
+			}
+		} else {
+			logger.Errorf(c.Request.Context(), fmt.Sprintf("请求/genspark失败   %v\n", err))
+			return nil, err
+		}
 	}
 }
 
