@@ -1043,11 +1043,11 @@ func cheat(requestBody map[string]interface{}, c *gin.Context, cookie string) (m
 				logger.Infof(c.Request.Context(), fmt.Sprintf("cheat success!"))
 				return requestBody, nil
 			} else {
-				logger.Errorf(c.Request.Context(), fmt.Sprintf("读取/genspark token 失败   %v\n", err))
+				logger.Errorf(c.Request.Context(), fmt.Sprintf("读取/genspark token 失败,查看 playwright-proxy log"))
 				return nil, err
 			}
 		} else {
-			logger.Errorf(c.Request.Context(), fmt.Sprintf("请求/genspark失败   %v\n", err))
+			logger.Errorf(c.Request.Context(), fmt.Sprintf("请求/genspark失败,查看 playwright-proxy log"))
 			return nil, err
 		}
 	}

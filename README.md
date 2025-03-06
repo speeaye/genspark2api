@@ -27,6 +27,7 @@ _觉得有点意思的话 别忘了点个 ⭐_
     - **o3-mini-high**
     - **claude-3-5-sonnet**
     - **claude-3-7-sonnet**
+    - **claude-3-7-sonnet-thinking**
     - **claude-3-5-haiku**
     - **gemini-2.0-flash**
     - **deep-seek-v3**
@@ -223,6 +224,7 @@ Render 可以直接部署 docker 镜像,不需要 fork 仓库：[Render](https:/
 ```docker 
 docker run --name genspark-playwright-proxy -d --restart always \
 -p 7022:7022 \
+-v $(pwd)/data:/app/genspark-playwright-proxy/data \
 -e PROXY_URL=http://account:pwd@ip:port #  [可选] 推荐(住宅)动态代理,配置代理后过验证概率更高,但响应会变慢。
 -e TZ=Asia/Shanghai \
 deanxv/genspark-playwright-proxy
