@@ -274,7 +274,7 @@ Genspark官方服务不可用,请稍后再试。
 
 ### Request
 
-**Endpoint**: `POST /v1/videos/generation`
+**Endpoint**: `POST /v1/videos/generations`
 
 **Content-Type**: `application/json`
 
