@@ -17,7 +17,7 @@ _觉得有点意思的话 别忘了点个 ⭐_
 
 </div>
 
-> ⚠️目前官方强制校验`ReCaptchaV3`，不通过则模型降智/生图异常,请参考[genspark-playwright-prxoy服务过V3验证](#genspark-playwright-prxoy服务过V3验证)并配置环境变量`RECAPTCHA_PROXY_URL`。
+> ⚠️目前官方强制校验`ReCaptchaV3`不通过则模型降智/生图异常,请参考[genspark-playwright-prxoy服务过V3验证](#genspark-playwright-prxoy服务过V3验证)并配置环境变量`RECAPTCHA_PROXY_URL`。
 
 ## 功能
 
@@ -43,6 +43,7 @@ _觉得有点意思的话 别忘了点个 ⭐_
     - **recraft-v3**
     - **dall-e-3**
     - **imagen3**
+- [x] 支持文/图生视频接口(`/videos/generations`),详情查看[文/图生视频请求格式](#生视频请求格式)
 - [x] 支持自定义请求头校验值(Authorization)
 - [x] 支持cookie池(随机)
 - [x] 支持请求失败自动切换cookie重试(需配置cookie池)
@@ -178,10 +179,9 @@ Render 可以直接部署 docker 镜像,不需要 fork 仓库：[Render](https:/
 12. `RATE_LIMIT_COOKIE_LOCK_DURATION=600`  [可选]到达速率限制的cookie禁用时间,默认为600s
 13. `REASONING_HIDE=0`  [可选]**隐藏**推理过程(默认:0)[0:关闭,1:开启]
 
-~~14. `SESSION_IMAGE_CHAT_MAP=aed9196b-********-4ed6e32f7e4d=0c6785e6-********-7ff6e5a2a29c,aefwer6b-********-casds22=fda234-********-sfaw123`  [可选]Session绑定Image-Chat(多个请以,分隔),详细请看[进阶配置](#生图模型配置)~~
+~~14.`SESSION_IMAGE_CHAT_MAP=aed9196b-********-4ed6e32f7e4d=0c6785e6-********-7ff6e5a2a29c,aefwer6b-********-casds22=fda234-********-sfaw123`  [可选]Session绑定Image-Chat(多个请以,分隔),详细请看[进阶配置](#生图模型配置)~~
 
 ~~15. `YES_CAPTCHA_CLIENT_KEY=******`  [可选]YesCaptcha Client Key 过谷歌验证,详细请看[使用YesCaptcha过谷歌验证](#使用YesCaptcha过谷歌验证)~~
-
 
 ### cookie获取方式
 
@@ -221,6 +221,7 @@ Render 可以直接部署 docker 镜像,不需要 fork 仓库：[Render](https:/
 1. docker部署genspark-playwright-prxoy
 
 #### docker
+
 ```docker 
 docker run --name genspark-playwright-proxy -d --restart always \
 -p 7022:7022 \
@@ -231,6 +232,7 @@ deanxv/genspark-playwright-proxy
 ```
 
 #### docker-compose
+
 ```docker-compose
 version: '3.4'
 
@@ -267,6 +269,42 @@ Genspark官方服务不可用,请稍后再试。
 > `All cookies are temporarily unavailable.`
 >
 所有用户(cookie)均到达速率限制,更换用户cookie或稍后再试。
+
+## 生视频请求格式
+
+### Request
+
+**Endpoint**: `POST /v1/videos/generation`
+
+**Content-Type**: `application/json`
+
+#### Request Parameters
+
+| 字段 Field     | 类型 Type | 必填 Required | 描述 Description            | 可选值 Accepted Values                                                                             |
+|--------------|---------|-------------|---------------------------|-------------------------------------------------------------------------------------------------|
+| model        | string  | 是           | 使用的视频生成模型                 | 模型列表: `kling/v1.6/standard`\|`pixverse/v3.5/turbo`\|`lumadream/ray-2`\|`gemini/veo2`\|`hunyuan` |
+| aspect_ratio | string  | 是           | 视频宽高比                     | `9:16` \| `16:9` \| `3:4` \|`1:1` \| `4:3`                                                      |
+| duration     | int     | 是           | 视频时长（单位：秒）                | 正整数                                                                                             |
+| prompt       | string  | 是           | 生成视频的文本描述                 | -                                                                                               |
+| auto_prompt  | bool    | 是           | 是否自动优化提示词                 | `true` \| `false`                                                                               |
+| image        | string  | 否           | 用于视频生成的基底图片（Base64编码/url） | Base64字符串/url                                                                                   |
+
+---
+
+### Response
+
+#### Response Object
+
+```json
+{
+  "created": 1677664796,
+  "data": [
+    {
+      "url": "https://example.com/video.mp4",
+    }
+  ]
+}
+```
 
 ## 其他
 

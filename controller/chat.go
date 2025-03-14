@@ -31,6 +31,7 @@ const (
 	uploadEndpoint   = baseURL + "/api/get_upload_personal_image_url"
 	chatType         = "COPILOT_MOA_CHAT"
 	imageType        = "COPILOT_MOA_IMAGE"
+	videoType        = "COPILOT_MOA_VIDEO"
 	responseIDFormat = "chatcmpl-%s"
 )
 
@@ -653,7 +654,6 @@ type Content struct {
 	DetailAnswer string `json:"detailAnswer"`
 }
 
-// 然后这样解析
 func getDetailAnswer(eventMap map[string]interface{}) (string, error) {
 	// 获取 content 字段的值
 	contentStr, ok := eventMap["content"].(string)
@@ -901,7 +901,7 @@ func handleStreamRequest(c *gin.Context, client cycletls.CycleTLS, cookie string
 		SSELoop:
 			for response := range sseChan {
 				if response.Done {
-					logger.Warnf(ctx, response.Data)
+					logger.Debugf(ctx, response.Data)
 					return false
 				}
 

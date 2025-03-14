@@ -3,7 +3,7 @@ package common
 import "time"
 
 var StartTime = time.Now().Unix() // unit: second
-var Version = "v1.11.1"           // this hard coding will be replaced automatically when building, no need to manually change
+var Version = "v1.12.0"           // this hard coding will be replaced automatically when building, no need to manually change
 
 var DefaultOpenaiModelList = []string{
 	"gpt-4o",
@@ -54,3 +54,13 @@ var ImageModelList = []string{
 	"dall-e-3",
 	"imagen3",
 }
+
+var VideoModelList = []string{
+	"kling/v1.6/standard",
+	"pixverse/v3.5/turbo",
+	"lumadream/ray-2",
+	"gemini/veo2",
+	"hunyuan",
+}
+
+//
