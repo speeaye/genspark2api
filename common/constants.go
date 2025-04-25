@@ -3,7 +3,7 @@ package common
 import "time"
 
 var StartTime = time.Now().Unix() // unit: second
-var Version = "v1.12.0"           // this hard coding will be replaced automatically when building, no need to manually change
+var Version = "v1.12.1"           // this hard coding will be replaced automatically when building, no need to manually change
 
 var DefaultOpenaiModelList = []string{
 	"gpt-4o",
@@ -24,6 +24,7 @@ var DefaultOpenaiModelList = []string{
 	"recraft-v3",
 	"dall-e-3",
 	"imagen3",
+	"gpt-image-1",
 }
 
 var TextModelList = []string{
@@ -53,6 +54,8 @@ var ImageModelList = []string{
 	"recraft-v3",
 	"dall-e-3",
 	"imagen3",
+	"imagen3",
+	"gpt-image-1",
 }
 
 var VideoModelList = []string{
