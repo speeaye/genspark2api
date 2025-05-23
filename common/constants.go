@@ -3,7 +3,7 @@ package common
 import "time"
 
 var StartTime = time.Now().Unix() // unit: second
-var Version = "v1.12.2"           // this hard coding will be replaced automatically when building, no need to manually change
+var Version = "v1.12.3"           // this hard coding will be replaced automatically when building, no need to manually change
 
 var DefaultOpenaiModelList = []string{
 	"gpt-4.1",
@@ -15,6 +15,8 @@ var DefaultOpenaiModelList = []string{
 	"gemini-2.0-flash",
 	"deep-seek-v3",
 	"deep-seek-r1",
+	"claude-sonnet-4-thinking",
+	"claude-sonnet-4",
 
 	"flux",
 	"flux-speed",
@@ -37,6 +39,8 @@ var TextModelList = []string{
 	"gemini-2.0-flash",
 	"deep-seek-v3",
 	"deep-seek-r1",
+	"claude-sonnet-4-thinking",
+	"claude-sonnet-4",
 }
 
 var MixtureModelList = []string{
