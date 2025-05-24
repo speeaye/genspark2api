@@ -3,38 +3,44 @@ package common
 import "time"
 
 var StartTime = time.Now().Unix() // unit: second
-var Version = "v1.10.18"          // this hard coding will be replaced automatically when building, no need to manually change
+var Version = "v1.12.3"           // this hard coding will be replaced automatically when building, no need to manually change
 
 var DefaultOpenaiModelList = []string{
-	"gpt-4o",
+	"gpt-4.1",
 	"o1",
-	"o3-mini-high",
-	"claude-3-5-sonnet",
+	"o4-mini-high",
+	"claude-3-7-sonnet-thinking",
 	"claude-3-7-sonnet",
-	"claude-3-5-haiku",
+	"gemini-2.5-pro",
 	"gemini-2.0-flash",
 	"deep-seek-v3",
 	"deep-seek-r1",
+	"claude-sonnet-4-thinking",
+	"claude-sonnet-4",
 
 	"flux",
 	"flux-speed",
 	"flux-pro/ultra",
 	"ideogram",
+	"ideogram/V_2A",
 	"recraft-v3",
 	"dall-e-3",
 	"imagen3",
+	"gpt-image-1",
 }
 
 var TextModelList = []string{
-	"gpt-4o",
+	"gpt-4.1",
 	"o1",
-	"o3-mini-high",
-	"claude-3-5-sonnet",
+	"o4-mini-high",
+	"claude-3-7-sonnet-thinking",
 	"claude-3-7-sonnet",
-	"claude-3-5-haiku",
+	"gemini-2.5-pro",
 	"gemini-2.0-flash",
 	"deep-seek-v3",
 	"deep-seek-r1",
+	"claude-sonnet-4-thinking",
+	"claude-sonnet-4",
 }
 
 var MixtureModelList = []string{
@@ -48,7 +54,20 @@ var ImageModelList = []string{
 	"flux-speed",
 	"flux-pro/ultra",
 	"ideogram",
+	"ideogram/V_2A",
 	"recraft-v3",
 	"dall-e-3",
 	"imagen3",
+	"imagen3",
+	"gpt-image-1",
 }
+
+var VideoModelList = []string{
+	"kling/v1.6/standard",
+	"pixverse/v3.5/turbo",
+	"lumadream/ray-2",
+	"gemini/veo2",
+	"hunyuan",
+}
+
+//

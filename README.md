@@ -17,6 +17,8 @@ _觉得有点意思的话 别忘了点个 ⭐_
 
 </div>
 
+> ⚠️目前官方强制校验`ReCaptchaV3`不通过则模型降智/生图异常,请参考[genspark-playwright-prxoy服务过V3验证](#genspark-playwright-prxoy服务过V3验证)并配置环境变量`RECAPTCHA_PROXY_URL`。
+
 ## 功能
 
 - [x] 支持对话接口(流式/非流式)(`/chat/completions`)(请求非以下列表的模型会触发`Mixture-of-Agents`模式)
@@ -25,6 +27,7 @@ _觉得有点意思的话 别忘了点个 ⭐_
     - **o3-mini-high**
     - **claude-3-5-sonnet**
     - **claude-3-7-sonnet**
+    - **claude-3-7-sonnet-thinking**
     - **claude-3-5-haiku**
     - **gemini-2.0-flash**
     - **deep-seek-v3**
@@ -36,9 +39,11 @@ _觉得有点意思的话 别忘了点个 ⭐_
     - **flux-speed**
     - **flux-pro/ultra**
     - **ideogram**
+    - **ideogram/V_2A**
     - **recraft-v3**
     - **dall-e-3**
     - **imagen3**
+- [x] 支持文/图生视频接口(`/videos/generations`),详情查看[文/图生视频请求格式](#生视频请求格式)
 - [x] 支持自定义请求头校验值(Authorization)
 - [x] 支持cookie池(随机)
 - [x] 支持请求失败自动切换cookie重试(需配置cookie池)
@@ -167,16 +172,16 @@ Render 可以直接部署 docker 镜像,不需要 fork 仓库：[Render](https:/
 5. `AUTO_DEL_CHAT=0`  [可选]对话完成自动删除(默认:0)[0:关闭,1:开启]
 6. `REQUEST_RATE_LIMIT=60`  [可选]每分钟下的单ip请求速率限制,默认:60次/min
 7. `PROXY_URL=http://127.0.0.1:10801`  [可选]代理
-8. `AUTO_MODEL_CHAT_MAP_TYPE=1`  [可选]自动配置Model绑定Chat(默认:1)[0:关闭,1:开启]
-9. `MODEL_CHAT_MAP=claude-3-7-sonnet=a649******00fa,gpt-4o=su74******47hd`  [可选]Model绑定Chat(多个请以,分隔),详细请看[进阶配置](#解决模型自动切换导致降智问题)
-10. `ROUTE_PREFIX=hf`  [可选]路由前缀,默认为空,添加该变量后的接口示例:`/hf/v1/chat/completions`
-11. `RATE_LIMIT_COOKIE_LOCK_DURATION=600`  [可选]到达速率限制的cookie禁用时间,默认为600s
-12. `REASONING_HIDE=0`  [可选]**隐藏**推理过程(默认:0)[0:关闭,1:开启]
+8. `RECAPTCHA_PROXY_URL=http://127.0.0.1:7022`  [可选]genspark-playwright-prxoy验证服务地址，仅填写域名或ip:端口即可。(示例:`RECAPTCHA_PROXY_URL=https://genspark-playwright-prxoy.com`或`RECAPTCHA_PROXY_URL=http://127.0.0.1:7022`),详情请看[genspark-playwright-prxoy服务过V3验证](#genspark-playwright-prxoy服务过V3验证)
+9. `AUTO_MODEL_CHAT_MAP_TYPE=1`  [可选]自动配置Model绑定Chat(默认:1)[0:关闭,1:开启]
+10. `MODEL_CHAT_MAP=claude-3-7-sonnet=a649******00fa,gpt-4o=su74******47hd`  [可选]Model绑定Chat(多个请以,分隔),详细请看[进阶配置](#解决模型自动切换导致降智问题)
+11. `ROUTE_PREFIX=hf`  [可选]路由前缀,默认为空,添加该变量后的接口示例:`/hf/v1/chat/completions`
+12. `RATE_LIMIT_COOKIE_LOCK_DURATION=600`  [可选]到达速率限制的cookie禁用时间,默认为600s
+13. `REASONING_HIDE=0`  [可选]**隐藏**推理过程(默认:0)[0:关闭,1:开启]
 
-~~13. `SESSION_IMAGE_CHAT_MAP=aed9196b-********-4ed6e32f7e4d=0c6785e6-********-7ff6e5a2a29c,aefwer6b-********-casds22=fda234-********-sfaw123`  [可选]Session绑定Image-Chat(多个请以,分隔),详细请看[进阶配置](#生图模型配置)~~
+~~14.`SESSION_IMAGE_CHAT_MAP=aed9196b-********-4ed6e32f7e4d=0c6785e6-********-7ff6e5a2a29c,aefwer6b-********-casds22=fda234-********-sfaw123`  [可选]Session绑定Image-Chat(多个请以,分隔),详细请看[进阶配置](#生图模型配置)~~
 
-~~14. `YES_CAPTCHA_CLIENT_KEY=******`  [可选]YesCaptcha Client Key 过谷歌验证,详细请看[使用YesCaptcha过谷歌验证](#使用YesCaptcha过谷歌验证)~~
-
+~~15. `YES_CAPTCHA_CLIENT_KEY=******`  [可选]YesCaptcha Client Key 过谷歌验证,详细请看[使用YesCaptcha过谷歌验证](#使用YesCaptcha过谷歌验证)~~
 
 ### cookie获取方式
 
@@ -211,34 +216,74 @@ Render 可以直接部署 docker 镜像,不需要 fork 仓库：[Render](https:/
    ![img.png](docs/img4.png)
 4. 配置环境变量 `MODEL_CHAT_MAP=claude-3-7-sonnet=3cdcc******474c5` (多个请以,分隔)
 
-### 生图模型配置[**暂不需要**]
+### genspark-playwright-prxoy服务过V3验证
 
-> 配置环境变量 SESSION_IMAGE_CHAT_MAP
+1. docker部署genspark-playwright-prxoy
 
-~~1. 打开**F12**开发者工具。~~
+#### docker
 
-~~2. 选择生成图像,选择任一生图模型,发起对话。~~
+```docker 
+docker run --name genspark-playwright-proxy -d --restart always \
+-p 7022:7022 \
+-v $(pwd)/data:/app/genspark-playwright-proxy/data \
+-e PROXY_URL=http://account:pwd@ip:port #  [可选] 推荐(住宅)动态代理,配置代理后过验证概率更高,但响应会变慢。
+-e TZ=Asia/Shanghai \
+deanxv/genspark-playwright-proxy
+```
 
-~~3. 点击ask请求,此时最上方url中的`id`(或响应中的`id`)即为此对话唯一id,然后在请求头中获取`session_id`的值。~~
+#### docker-compose
 
-   ![img.png](docs/img7.png)
-~~4. 配置环境变量 `SESSION_IMAGE_CHAT_MAP=aed9196b-********-4ed6e32f7e4d=0c6785e6-********-7ff6e5a2a29c` (即session=chatId的格式,多个请以,分隔)~~
+```docker-compose
+version: '3.4'
 
-### 使用YesCaptcha过谷歌验证[**暂不需要**]
+services:
+  genspark-playwright-prxoy:
+    image: deanxv/genspark-playwright-proxy:latest
+    container_name: genspark-playwright-prxoy
+    restart: always
+    ports:
+      - "7022:7022"
+    volumes:
+      - ./data:/app/genspark-playwright-prxoy/data
+    environment:
+      - PROXY_URL=http://account:pwd@ip:port #  [可选] 推荐(住宅)动态代理,配置代理后过验证概率更高,但响应会变慢。
+```
 
-> genspark官方目前文生图接口需要过谷歌验证,可使用YesCaptcha解决。
->
-> **tip**: 过一次谷歌验证消耗20积分,约**0.0167元人民币**(1元人民币约能用60次)。
+2. 部署后配置`genspark2api`环境变量`RECAPTCHA_PROXY_URL`，仅填写域名或ip:端口即可。(示例:`RECAPTCHA_PROXY_URL=https://genspark-playwright-prxoy.com`或`RECAPTCHA_PROXY_URL=http://127.0.0.1:7022`)
+
+3. 重启`genspark2api`服务。
+
+#### 接入自定义Recaptcha服务
 
 
-~~1. 注册 [YesCaptcha](https://yescaptcha.com/i/021iAE)[此链接注册直达**vip5**]~~
+###### 接口：获取令牌
 
-~~2. 获取`Client Key`~~
-~~![img.png](docs/img6.png)~~
+###### 基本信息
 
-~~3. 配置环变量`YES_CAPTCHA_CLIENT_KEY=******`~~
+- **接口地址**：`/genspark`
+- **请求方式**：GET
+- **接口描述**：获取用户认证令牌
 
-~~4. 重启服务~~
+###### 请求参数
+
+###### 请求头
+
+| 参数名 | 必选 | 类型 | 说明 |
+|-------|------|------|------|
+| cookie | 是 | string | 用户会话凭证 |
+
+###### 响应参数
+
+###### 响应示例
+
+```json
+{
+  "code": 200,
+  "token": "ey********pe"
+}
+```
+
+
 
 ## 报错排查
 
@@ -256,6 +301,42 @@ Genspark官方服务不可用,请稍后再试。
 > `All cookies are temporarily unavailable.`
 >
 所有用户(cookie)均到达速率限制,更换用户cookie或稍后再试。
+
+## 生视频请求格式
+
+### Request
+
+**Endpoint**: `POST /v1/videos/generations`
+
+**Content-Type**: `application/json`
+
+#### Request Parameters
+
+| 字段 Field     | 类型 Type | 必填 Required | 描述 Description            | 可选值 Accepted Values                                                                             |
+|--------------|---------|-------------|---------------------------|-------------------------------------------------------------------------------------------------|
+| model        | string  | 是           | 使用的视频生成模型                 | 模型列表: `kling/v1.6/standard`\|`pixverse/v3.5/turbo`\|`lumadream/ray-2`\|`gemini/veo2`\|`hunyuan` |
+| aspect_ratio | string  | 是           | 视频宽高比                     | `9:16` \| `16:9` \| `3:4` \|`1:1` \| `4:3`                                                      |
+| duration     | int     | 是           | 视频时长（单位：秒）                | 正整数                                                                                             |
+| prompt       | string  | 是           | 生成视频的文本描述                 | -                                                                                               |
+| auto_prompt  | bool    | 是           | 是否自动优化提示词                 | `true` \| `false`                                                                               |
+| image        | string  | 否           | 用于视频生成的基底图片（Base64编码/url） | Base64字符串/url                                                                                   |
+
+---
+
+### Response
+
+#### Response Object
+
+```json
+{
+  "created": 1677664796,
+  "data": [
+    {
+      "url": "https://example.com/video.mp4",
+    }
+  ]
+}
+```
 
 ## 其他
 

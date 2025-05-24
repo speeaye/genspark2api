@@ -139,6 +139,27 @@ type OpenAIImagesGenerationRequest struct {
 	Image          string `json:"image"`
 }
 
+type VideosGenerationRequest struct {
+	ResponseFormat string `json:"response_format"`
+	Model          string `json:"model"`
+	AspectRatio    string `json:"aspect_ratio"`
+	Duration       int    `json:"duration"`
+	Prompt         string `json:"prompt"`
+	AutoPrompt     bool   `json:"auto_prompt"`
+	Image          string `json:"image"`
+}
+
+type VideosGenerationResponse struct {
+	Created int64                           `json:"created"`
+	Data    []*VideosGenerationDataResponse `json:"data"`
+}
+
+type VideosGenerationDataResponse struct {
+	URL           string `json:"url"`
+	RevisedPrompt string `json:"revised_prompt"`
+	B64Json       string `json:"b64_json"`
+}
+
 type OpenAIImagesGenerationResponse struct {
 	Created     int64                                 `json:"created"`
 	DailyLimit  bool                                  `json:"dailyLimit"`
